@@ -7,8 +7,8 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const CSV_PATH = path.resolve(__dirname, "../../../scraped_products.csv");
-const STATE_PATH = path.resolve(__dirname, "./scraper_state.json");
+const CSV_PATH = path.resolve(__dirname, "../../../scraped_products_with_subcategories.csv");
+const STATE_PATH = path.resolve(__dirname, "./scraper_state_v2.json");
 
 // Helper to escape values for CSV columns
 const escapeCsvValue = (val) => {
@@ -20,35 +20,67 @@ const escapeCsvValue = (val) => {
   return str;
 };
 
-// 24 Categories of complete wears
+// Categories of complete wears expanded based on Myntra reference
 const CATEGORIES = [
-  // Men
-  { path: "men-tshirts", category: "Men" },
-  { path: "men-casual-shirts", category: "Men" },
-  { path: "men-formal-shirts", category: "Men" },
-  { path: "men-jeans", category: "Men" },
-  { path: "men-casual-trousers", category: "Men" },
-  { path: "men-sports-shoes", category: "Men" },
-  { path: "men-casual-shoes", category: "Men" },
-  { path: "men-jackets", category: "Men" },
-  { path: "men-sweaters", category: "Men" },
-  { path: "men-activewear", category: "Men" },
+  // Men - Topwear
+  { path: "men-tshirts", category: "Men", subcategory: "T-Shirts" },
+  { path: "men-casual-shirts", category: "Men", subcategory: "Casual Shirts" },
+  { path: "men-formal-shirts", category: "Men", subcategory: "Formal Shirts" },
+  { path: "men-sweatshirts", category: "Men", subcategory: "Sweatshirts" },
+  { path: "men-sweaters", category: "Men", subcategory: "Sweaters" },
+  { path: "men-jackets", category: "Men", subcategory: "Jackets" },
+  { path: "men-blazers", category: "Men", subcategory: "Blazers & Coats" },
+  { path: "men-suits", category: "Men", subcategory: "Suits" },
+  
+  // Men - Indian & Festive Wear
+  { path: "men-kurtas", category: "Men", subcategory: "Kurtas & Kurta Sets" },
+  { path: "men-sherwanis", category: "Men", subcategory: "Sherwanis" },
+  
+  // Men - Bottomwear
+  { path: "men-jeans", category: "Men", subcategory: "Jeans" },
+  { path: "men-casual-trousers", category: "Men", subcategory: "Casual Trousers" },
+  { path: "men-formal-trousers", category: "Men", subcategory: "Formal Trousers" },
+  { path: "men-shorts", category: "Men", subcategory: "Shorts" },
+  { path: "men-track-pants", category: "Men", subcategory: "Track Pants & Joggers" },
+  
+  // Men - Footwear
+  { path: "men-sports-shoes", category: "Men", subcategory: "Sports Shoes" },
+  { path: "men-casual-shoes", category: "Men", subcategory: "Casual Shoes" },
+  { path: "men-formal-shoes", category: "Men", subcategory: "Formal Shoes" },
+  { path: "men-sneakers", category: "Men", subcategory: "Sneakers" },
+  { path: "men-sandals", category: "Men", subcategory: "Sandals & Floaters" },
+  { path: "men-flip-flops", category: "Men", subcategory: "Flip Flops" },
+
+  // Men - Accessories
+  { path: "men-wallets", category: "Men", subcategory: "Wallets" },
+  { path: "men-belts", category: "Men", subcategory: "Belts" },
+  { path: "men-perfumes", category: "Men", subcategory: "Perfumes" },
+
   // Women
-  { path: "women-tops-and-tees", category: "Women" },
-  { path: "women-dresses", category: "Women" },
-  { path: "women-kurtas-suits", category: "Women" },
-  { path: "women-jeans", category: "Women" },
-  { path: "women-trousers", category: "Women" },
-  { path: "women-jackets-coats", category: "Women" },
-  { path: "women-flats", category: "Women" },
-  { path: "women-heels", category: "Women" },
-  { path: "women-sports-shoes", category: "Women" },
+  { path: "women-tops-and-tees", category: "Women", subcategory: "Tops and Tees" },
+  { path: "women-dresses", category: "Women", subcategory: "Dresses" },
+  { path: "women-kurtas-suits", category: "Women", subcategory: "Kurtas Suits" },
+  { path: "women-sarees", category: "Women", subcategory: "Sarees" },
+  { path: "women-ethnic-wear", category: "Women", subcategory: "Ethnic Wear" },
+  { path: "women-jeans", category: "Women", subcategory: "Jeans" },
+  { path: "women-trousers", category: "Women", subcategory: "Trousers" },
+  { path: "women-shorts-skirts", category: "Women", subcategory: "Shorts & Skirts" },
+  { path: "women-jackets-coats", category: "Women", subcategory: "Jackets and Coats" },
+  { path: "women-flats", category: "Women", subcategory: "Flats" },
+  { path: "women-heels", category: "Women", subcategory: "Heels" },
+  { path: "women-sports-shoes", category: "Women", subcategory: "Sports Shoes" },
+  { path: "women-casual-shoes", category: "Women", subcategory: "Casual Shoes" },
+  { path: "women-handbags", category: "Women", subcategory: "Handbags" },
+  { path: "women-jewellery", category: "Women", subcategory: "Jewellery" },
+  
   // Kids
-  { path: "kids-tshirts", category: "Kids" },
-  { path: "girls-dresses", category: "Kids" },
-  { path: "boys-shirts", category: "Kids" },
-  { path: "kids-footwear", category: "Kids" },
-  { path: "kids-jackets", category: "Kids" }
+  { path: "kids-tshirts", category: "Kids", subcategory: "T-Shirts" },
+  { path: "girls-dresses", category: "Kids", subcategory: "Dresses" },
+  { path: "boys-shirts", category: "Kids", subcategory: "Shirts" },
+  { path: "boys-jeans", category: "Kids", subcategory: "Jeans" },
+  { path: "girls-jeans", category: "Kids", subcategory: "Jeans" },
+  { path: "kids-footwear", category: "Kids", subcategory: "Footwear" },
+  { path: "kids-jackets", category: "Kids", subcategory: "Jackets" }
 ];
 
 const CSV_HEADERS = [
@@ -57,6 +89,7 @@ const CSV_HEADERS = [
   "price",
   "stock",
   "category",
+  "subcategory",
   "images",
   "averageRating",
   "totalReviews",
@@ -99,6 +132,7 @@ const appendProductToCsv = (p) => {
     p.price,
     p.stock,
     p.category,
+    p.subcategory,
     p.images.join(";"),
     p.averageRating,
     p.totalReviews,
@@ -199,6 +233,7 @@ const runWorker = async (workerId, categoryQueue) => {
           price: p.price || 499,
           stock: 100,
           category: activeCategory.category,
+          subcategory: activeCategory.subcategory,
           images: cleanImages,
           averageRating: p.rating ? Math.round(p.rating * 10) / 10 : 4.2,
           totalReviews: p.ratingCount || 15,

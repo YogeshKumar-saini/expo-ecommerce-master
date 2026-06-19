@@ -9,7 +9,7 @@ import { ENV } from "../config/env.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const CSV_PATH = path.resolve(__dirname, "../../../scraped_products.csv");
+const CSV_PATH = path.resolve(__dirname, "../../../scraped_products_with_subcategories.csv");
 const BATCH_SIZE = 1000;
 
 const importCsvToDb = async () => {
@@ -41,6 +41,7 @@ const importCsvToDb = async () => {
         price: parseFloat(row.price) || 0,
         stock: parseInt(row.stock, 10) || 100,
         category: row.category,
+        subcategory: row.subcategory,
         images: row.images ? row.images.split(";").filter(Boolean) : [],
         averageRating: parseFloat(row.averageRating) || 0,
         totalReviews: parseInt(row.totalReviews, 10) || 0,

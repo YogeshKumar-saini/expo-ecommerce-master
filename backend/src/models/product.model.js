@@ -25,6 +25,11 @@ const productSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
+      enum: ["Men", "Women", "Kids"],
+    },
+    subcategory: {
+      type: String,
+      required: true,
     },
     images: [
       {

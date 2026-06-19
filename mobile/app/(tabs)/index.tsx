@@ -8,17 +8,32 @@ import { View, Text, ScrollView, TouchableOpacity, TextInput, Image } from "reac
 
 const CATEGORIES = [
   { name: "All", icon: "grid-outline" as const },
-  { name: "Electronics", image: require("@/assets/images/electronics.png") },
-  { name: "Fashion", image: require("@/assets/images/fashion.png") },
-  { name: "Sports", image: require("@/assets/images/sports.png") },
-  { name: "Books", image: require("@/assets/images/books.png") },
+  { name: "Men", image: require("@/assets/images/men.png") },
+  { name: "Women", image: require("@/assets/images/women.png") },
+  { name: "Kids", image: require("@/assets/images/kids.png") },
 ];
 
 const ShopScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedSubcategory, setSelectedSubcategory] = useState("All");
 
   const { data: products, isLoading, isError } = useProducts();
+
+  const availableSubcategories = useMemo(() => {
+    if (!products || selectedCategory === "All") return ["All"];
+    const subs = new Set(
+      products
+        .filter((p) => p.category === selectedCategory && p.subcategory)
+        .map((p) => p.subcategory)
+    );
+    return ["All", ...Array.from(subs)];
+  }, [products, selectedCategory]);
+
+  const handleCategorySelect = (catName: string) => {
+    setSelectedCategory(catName);
+    setSelectedSubcategory("All");
+  };
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];
@@ -28,6 +43,9 @@ const ShopScreen = () => {
     // filtering by category
     if (selectedCategory !== "All") {
       filtered = filtered.filter((product) => product.category === selectedCategory);
+      if (selectedSubcategory !== "All") {
+        filtered = filtered.filter((product) => product.subcategory === selectedSubcategory);
+      }
     }
 
     // filtering by searh query
@@ -38,7 +56,7 @@ const ShopScreen = () => {
     }
 
     return filtered;
-  }, [products, selectedCategory, searchQuery]);
+  }, [products, selectedCategory, selectedSubcategory, searchQuery]);
 
   return (
     <SafeScreen>
@@ -85,7 +103,7 @@ const ShopScreen = () => {
               return (
                 <TouchableOpacity
                   key={category.name}
-                  onPress={() => setSelectedCategory(category.name)}
+                  onPress={() => handleCategorySelect(category.name)}
                   className={`mr-3 rounded-2xl size-20 overflow-hidden items-center justify-center ${isSelected ? "bg-primary" : "bg-surface"}`}
                 >
                   {category.icon ? (
@@ -101,6 +119,30 @@ const ShopScreen = () => {
               );
             })}
           </ScrollView>
+
+          {/* SUBCATEGORY FILTER */}
+          {selectedCategory !== "All" && availableSubcategories.length > 1 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 20, marginTop: 16 }}
+            >
+              {availableSubcategories.map((sub) => {
+                const isSelected = selectedSubcategory === sub;
+                return (
+                  <TouchableOpacity
+                    key={sub as string}
+                    onPress={() => setSelectedSubcategory(sub as string)}
+                    className={`mr-3 px-5 py-2.5 rounded-full border border-border-light ${isSelected ? "bg-primary border-primary" : "bg-surface"}`}
+                  >
+                    <Text className={`font-semibold ${isSelected ? "text-background" : "text-text-secondary"}`}>
+                      {sub as string}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          )}
         </View>
 
         <View className="px-6 mb-6">
