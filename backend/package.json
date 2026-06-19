@@ -1,0 +1,34 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "seed:products": "node src/seeds/index.js",
+    "seed:products:ts": "node src/seeds/seedFromSeedProducts.js",
+    "upload:cloudinary": "node src/seeds/uploadImagesToCloudinary.js",
+    "export:csv": "node src/seeds/exportToCsv.js",
+    "scrape:catalog": "node src/seeds/scraper.js",
+    "db:import:csv": "node src/seeds/importScrapedCsv.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@clerk/express": "^1.7.52",
+    "axios": "^1.18.0",
+    "cheerio": "^1.2.0",
+    "cloudinary": "^2.10.0",
+    "cors": "^2.8.5",
+    "csv-parser": "^3.2.1",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "inngest": "^3.46.0",
+    "mongoose": "^8.19.3",
+    "multer": "^2.0.2",
+    "stripe": "^19.3.1"
+  }
+}
