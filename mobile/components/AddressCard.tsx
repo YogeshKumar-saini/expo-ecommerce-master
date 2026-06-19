@@ -18,44 +18,45 @@ export default function AddressCard({
   isDeletingAddress,
 }: AddressCardProps) {
   return (
-    <View className="bg-surface rounded-3xl p-5 mb-3">
+    <View className="rounded-xl border border-[#E5E5E5] bg-white p-5 mb-4">
       <View className="flex-row items-center justify-between mb-4">
         <View className="flex-row items-center">
-          <View className="bg-primary/20 rounded-full w-12 h-12 items-center justify-center mr-3">
-            <Ionicons name="location" size={24} color="#1DB954" />
-          </View>
-          <Text className="text-text-primary font-bold text-lg">{address.label}</Text>
+          <Ionicons name="location-outline" size={20} color="#000000" className="mr-2" />
+          <Text className="text-black font-semibold text-base ml-2">{address.label}</Text>
         </View>
         {address.isDefault && (
-          <View className="bg-primary px-3 py-1 rounded-full">
-            <Text className="text-background text-xs font-bold">Default</Text>
+          <View className="bg-black px-3 py-1 rounded-full">
+            <Text className="text-white text-xs font-medium">Default</Text>
           </View>
         )}
       </View>
-      <View className="ml-15">
-        <Text className="text-text-primary font-semibold mb-1">{address.fullName}</Text>
-        <Text className="text-text-secondary text-sm mb-1">{address.streetAddress}</Text>
-        <Text className="text-text-secondary text-sm mb-2">
+      
+      <View className="ml-8 mb-4">
+        <Text className="text-black font-medium mb-1">{address.fullName}</Text>
+        <Text className="text-text-secondary text-sm leading-5 mb-1">{address.streetAddress}</Text>
+        <Text className="text-text-secondary text-sm mb-1">
           {address.city}, {address.state} {address.zipCode}
         </Text>
         <Text className="text-text-secondary text-sm">{address.phoneNumber}</Text>
       </View>
-      <View className="flex-row mt-4 gap-2">
+
+      <View className="flex-row border-t border-[#F0F0F0] pt-4 gap-4">
         <TouchableOpacity
-          className="flex-1 bg-primary/20 py-3 rounded-xl items-center"
+          className="flex-1 border border-[#E5E5E5] py-2.5 rounded-lg items-center"
           activeOpacity={0.7}
           onPress={() => onEdit(address)}
           disabled={isUpdatingAddress}
         >
-          <Text className="text-primary font-bold">Edit</Text>
+          <Text className="text-black text-sm font-medium">Edit</Text>
         </TouchableOpacity>
+        
         <TouchableOpacity
-          className="flex-1 bg-red-500/20 py-3 rounded-xl items-center"
+          className="flex-1 border border-[#E5E5E5] py-2.5 rounded-lg items-center"
           activeOpacity={0.7}
           onPress={() => onDelete(address._id, address.label)}
           disabled={isDeletingAddress}
         >
-          <Text className="text-red-500 font-bold">Delete</Text>
+          <Text className="text-[#CC0000] text-sm font-medium">Delete</Text>
         </TouchableOpacity>
       </View>
     </View>

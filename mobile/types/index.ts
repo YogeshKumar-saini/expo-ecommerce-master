@@ -9,8 +9,29 @@ export interface Product {
   images: string[];
   averageRating: number;
   totalReviews: number;
+  brandName?: string;
+  details?: string;
+  sizes?: string;
+  mrp?: string;
+  sellPrice?: number;
+  discount?: string;
+  isActive?: boolean;
+  isFeatured?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ProductSubcategory {
+  name: string;
+  image: string;
+  count: number;
+}
+
+export interface ProductCategory {
+  name: string;
+  image: string;
+  count: number;
+  subcategories: ProductSubcategory[];
 }
 
 export interface User {

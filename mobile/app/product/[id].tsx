@@ -2,19 +2,21 @@ import SafeScreen from "@/components/SafeScreen";
 import useCart from "@/hooks/useCart";
 import { useProduct } from "@/hooks/useProduct";
 import useWishlist from "@/hooks/useWishlist";
+import { formatPrice } from "@/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
-  View,
-  Text,
-  Alert,
   ActivityIndicator,
-  TouchableOpacity,
-  ScrollView,
+  Alert,
   Dimensions,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import ImageViewing from "react-native-image-viewing";
 
 const { width } = Dimensions.get("window");
 
@@ -22,12 +24,13 @@ const ProductDetailScreen = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: product, isError, isLoading } = useProduct(id);
   const { addToCart, isAddingToCart } = useCart();
-
   const { isInWishlist, toggleWishlist, isAddingToWishlist, isRemovingFromWishlist } =
     useWishlist();
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [quantity] = useState(1);
+  const [isImageViewVisible, setIsImageViewVisible] = useState(false);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -46,34 +49,41 @@ const ProductDetailScreen = () => {
   if (isError || !product) return <ErrorUI />;
 
   const inStock = product.stock > 0;
+  const availableSizes = product.sizes
+    ? product.sizes
+        .split(",")
+        .map((size) => size.trim())
+        .filter(Boolean)
+    : [];
+  const activeSize = selectedSize || availableSizes[0];
 
   return (
     <SafeScreen>
-      {/* HEADER */}
-      <View className="absolute top-0 left-0 right-0 z-10 px-6 pt-20 pb-4 flex-row items-center justify-between">
+      {/* Floating Navigation */}
+      <View className="absolute left-0 right-0 top-0 z-10 flex-row items-center justify-between px-5 pt-14">
         <TouchableOpacity
-          className="bg-black/50 backdrop-blur-xl w-12 h-12 rounded-full items-center justify-center"
+          className="h-11 w-11 items-center justify-center rounded-full bg-white"
+          style={{ shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 3 }}
           onPress={() => router.back()}
-          activeOpacity={0.7}
+          activeOpacity={0.72}
         >
-          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={24} color="#000000" />
         </TouchableOpacity>
 
         <TouchableOpacity
-          className={`w-12 h-12 rounded-full items-center justify-center ${
-            isInWishlist(product._id) ? "bg-primary" : "bg-black/50 backdrop-blur-xl"
-          }`}
+          className="h-11 w-11 items-center justify-center rounded-full bg-white"
+          style={{ shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 3 }}
           onPress={() => toggleWishlist(product._id)}
           disabled={isAddingToWishlist || isRemovingFromWishlist}
-          activeOpacity={0.7}
+          activeOpacity={0.72}
         >
           {isAddingToWishlist || isRemovingFromWishlist ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
+            <ActivityIndicator size="small" color="#000000" />
           ) : (
             <Ionicons
               name={isInWishlist(product._id) ? "heart" : "heart-outline"}
-              size={24}
-              color={isInWishlist(product._id) ? "#121212" : "#FFFFFF"}
+              size={22}
+              color={isInWishlist(product._id) ? "#CC0000" : "#000000"}
             />
           )}
         </TouchableOpacity>
@@ -82,189 +92,228 @@ const ProductDetailScreen = () => {
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 110 }}
       >
-        {/* IMAGE GALLERY */}
-        <View className="relative">
+        {/* Image Gallery */}
+        <View className="relative bg-[#F5F5F5] rounded-b-[40px] overflow-hidden">
           <ScrollView
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            onScroll={(e) => {
-              const index = Math.round(e.nativeEvent.contentOffset.x / width);
+            scrollEventThrottle={16}
+            onScroll={(event) => {
+              const index = Math.round(event.nativeEvent.contentOffset.x / width);
               setSelectedImageIndex(index);
             }}
           >
             {product.images.map((image: string, index: number) => (
-              <View key={index} style={{ width }}>
-                <Image source={image} style={{ width, height: 400 }} contentFit="cover" />
-              </View>
+              <TouchableOpacity 
+                activeOpacity={0.9} 
+                onPress={() => setIsImageViewVisible(true)} 
+                key={image + index} 
+                style={{ width }}
+              >
+                <Image
+                  source={image}
+                  style={{ width, height: 440 }}
+                  contentFit="contain"
+                  contentPosition="center"
+                />
+              </TouchableOpacity>
             ))}
           </ScrollView>
 
-          {/* Image Indicators */}
-          <View className="absolute bottom-4 left-0 right-0 flex-row justify-center gap-2">
-            {product.images.map((_: any, index: number) => (
+          <View className="absolute bottom-5 left-0 right-0 flex-row justify-center gap-2">
+            {product.images.map((_: string, index: number) => (
               <View
                 key={index}
-                className={`h-2 rounded-full ${
-                  index === selectedImageIndex ? "bg-primary w-6" : "bg-white/50 w-2"
+                className={`rounded-full ${
+                  index === selectedImageIndex ? "h-2 w-2 bg-black" : "h-1.5 w-1.5 bg-black/30"
                 }`}
               />
             ))}
           </View>
         </View>
 
-        {/* PRODUCT INFO */}
-        <View className="p-6">
-          {/* Category */}
-          <View className="flex-row items-center mb-3">
-            <View className="bg-primary/20 px-3 py-1 rounded-full">
-              <Text className="text-primary text-xs font-bold">{product.category}</Text>
-            </View>
+        {/* Product Info */}
+        <View className="bg-white px-6 pb-8 pt-6">
+          {/* Name + Price Row */}
+          <View className="mb-4 flex-row items-start justify-between">
+            <Text className="mr-4 flex-1 text-xl font-semibold leading-7 text-black" numberOfLines={3}>
+              {product.name}
+            </Text>
+            <Text className="text-xl font-semibold text-black" numberOfLines={1}>
+              {formatPrice(product.price)}
+            </Text>
           </View>
 
-          {/* Product Name */}
-          <Text className="text-text-primary text-3xl font-bold mb-3">{product.name}</Text>
+          {/* Rating */}
+          <View className="mb-6 flex-row items-center">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Ionicons
+                key={star}
+                name="star"
+                size={16}
+                color={star <= Math.round(product.averageRating) ? "#000000" : "#E0E0E0"}
+              />
+            ))}
+            <Text className="ml-2 text-sm text-text-tertiary">({product.totalReviews})</Text>
+          </View>
 
-          {/* Rating & Reviews */}
-          <View className="flex-row items-center mb-4">
-            <View className="flex-row items-center bg-surface px-3 py-2 rounded-full">
-              <Ionicons name="star" size={16} color="#FFC107" />
-              <Text className="text-text-primary font-bold ml-1 mr-2">
-                {product.averageRating.toFixed(1)}
-              </Text>
-              <Text className="text-text-secondary text-sm">({product.totalReviews} reviews)</Text>
-            </View>
-            {inStock ? (
-              <View className="ml-3 flex-row items-center">
-                <View className="w-2 h-2 bg-green-500 rounded-full mr-2" />
-                <Text className="text-green-500 font-semibold text-sm">
-                  {product.stock} in stock
-                </Text>
+          <View className="h-px bg-[#E5E5E5]" />
+
+          {/* Catalog Tags */}
+          <View className="my-5">
+            <Text
+              style={{ fontSize: 11, fontWeight: "500", letterSpacing: 2, color: "#999999", textTransform: "uppercase", marginBottom: 12 }}
+            >
+              Category
+            </Text>
+            <View className="flex-row flex-wrap gap-2">
+              <View className="rounded-full border border-[#E5E5E5] px-4 py-2">
+                <Text className="text-sm text-black">{product.category}</Text>
               </View>
-            ) : (
-              <View className="ml-3 flex-row items-center">
-                <View className="w-2 h-2 bg-red-500 rounded-full mr-2" />
-                <Text className="text-red-500 font-semibold text-sm">Out of Stock</Text>
-              </View>
-            )}
-          </View>
-
-          {/* Price */}
-          <View className="flex-row items-center mb-6">
-            <Text className="text-primary text-4xl font-bold">${product.price.toFixed(2)}</Text>
-          </View>
-
-          {/* Quantity */}
-          <View className="mb-6">
-            <Text className="text-text-primary text-lg font-bold mb-3">Quantity</Text>
-
-            <View className="flex-row items-center">
-              <TouchableOpacity
-                className="bg-surface rounded-full w-12 h-12 items-center justify-center"
-                onPress={() => setQuantity(Math.max(1, quantity - 1))}
-                activeOpacity={0.7}
-                disabled={!inStock}
-              >
-                <Ionicons name="remove" size={24} color={inStock ? "#FFFFFF" : "#666"} />
-              </TouchableOpacity>
-
-              <Text className="text-text-primary text-xl font-bold mx-6">{quantity}</Text>
-
-              <TouchableOpacity
-                className="bg-primary rounded-full w-12 h-12 items-center justify-center"
-                onPress={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                activeOpacity={0.7}
-                disabled={!inStock || quantity >= product.stock}
-              >
-                <Ionicons
-                  name="add"
-                  size={24}
-                  color={!inStock || quantity >= product.stock ? "#666" : "#121212"}
-                />
-              </TouchableOpacity>
+              {product.subcategory && (
+                <View className="rounded-full border border-[#E5E5E5] px-4 py-2">
+                  <Text className="text-sm text-black">{product.subcategory}</Text>
+                </View>
+              )}
             </View>
-
-            {quantity >= product.stock && inStock && (
-              <Text className="text-orange-500 text-sm mt-2">Maximum stock reached</Text>
-            )}
           </View>
+
+          {/* Size Selector */}
+          <View className="mb-5">
+            <Text
+              style={{ fontSize: 11, fontWeight: "500", letterSpacing: 2, color: "#999999", textTransform: "uppercase", marginBottom: 12 }}
+            >
+              Size
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 10, paddingRight: 8 }}
+            >
+              {(availableSizes.length > 0 ? availableSizes.slice(0, 5) : ["Free"]).map((size) => {
+                const isSelected = activeSize === size;
+                return (
+                  <TouchableOpacity
+                    key={size}
+                    activeOpacity={0.75}
+                    onPress={() => setSelectedSize(size)}
+                    className={`h-11 min-w-[44px] items-center justify-center rounded-full px-4 border ${
+                      isSelected ? "border-black bg-black" : "border-[#E5E5E5] bg-white"
+                    }`}
+                  >
+                    <Text
+                      className={`text-sm font-medium ${
+                        isSelected ? "text-white" : "text-text-secondary"
+                      }`}
+                    >
+                      {size}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          <View className="h-px bg-[#E5E5E5]" />
 
           {/* Description */}
-          <View className="mb-8">
-            <Text className="text-text-primary text-lg font-bold mb-3">Description</Text>
-            <Text className="text-text-secondary text-base leading-6">{product.description}</Text>
+          <TouchableOpacity activeOpacity={0.7} className="flex-row items-center justify-between py-5">
+            <Text className="text-base font-medium text-black">Description</Text>
+            <Ionicons name="chevron-forward" size={20} color="#999999" />
+          </TouchableOpacity>
+
+          {product.description && (
+            <Text className="-mt-2 mb-4 text-sm leading-5 text-text-secondary" numberOfLines={4}>
+              {product.description}
+            </Text>
+          )}
+
+          <View className="h-px bg-[#E5E5E5]" />
+
+          {/* Reviews */}
+          <TouchableOpacity activeOpacity={0.7} className="flex-row items-center justify-between py-5">
+            <Text className="text-base font-medium text-black">Reviews</Text>
+            <Ionicons name="chevron-forward" size={20} color="#999999" />
+          </TouchableOpacity>
+
+          {/* Stock */}
+          <View className="mt-1 flex-row items-center">
+            <View className={`mr-2 h-2 w-2 rounded-full ${inStock ? "bg-black" : "bg-[#CC0000]"}`} />
+            <Text className={`text-sm ${inStock ? "text-text-secondary" : "text-[#CC0000]"}`}>
+              {inStock ? `${product.stock} in stock` : "Out of stock"}
+            </Text>
           </View>
         </View>
       </ScrollView>
 
-      {/* Bottom Action Bar */}
-      <View className="absolute bottom-0 left-0 right-0 bg-background/95 backdrop-blur-xl border-t border-surface px-6 py-4 pb-8">
-        <View className="flex-row items-center gap-3">
-          <View className="flex-1">
-            <Text className="text-text-secondary text-sm mb-1">Total Price</Text>
-            <Text className="text-primary text-2xl font-bold">
-              ${(product.price * quantity).toFixed(2)}
-            </Text>
-          </View>
-          <TouchableOpacity
-            className={`rounded-2xl px-8 py-4 flex-row items-center ${
-              !inStock ? "bg-surface" : "bg-primary"
-            }`}
-            activeOpacity={0.8}
-            onPress={handleAddToCart}
-            disabled={!inStock || isAddingToCart}
-          >
-            {isAddingToCart ? (
-              <ActivityIndicator size="small" color="#121212" />
-            ) : (
-              <>
-                <Ionicons name="cart" size={24} color={!inStock ? "#666" : "#121212"} />
-                <Text
-                  className={`font-bold text-lg ml-2 ${
-                    !inStock ? "text-text-secondary" : "text-background"
-                  }`}
-                >
-                  {!inStock ? "Out of Stock" : "Add to Cart"}
-                </Text>
-              </>
-            )}
-          </TouchableOpacity>
-        </View>
+      {/* Add to Cart Button */}
+      <View className="absolute bottom-0 left-0 right-0 bg-white px-6 pb-8 pt-3">
+        <TouchableOpacity
+          className={`h-[54px] flex-row items-center justify-center rounded-2xl ${
+            inStock ? "bg-black" : "bg-[#CCCCCC]"
+          }`}
+          activeOpacity={0.86}
+          onPress={handleAddToCart}
+          disabled={!inStock || isAddingToCart}
+        >
+          {isAddingToCart ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <>
+              <Ionicons name="bag-outline" size={18} color="#FFFFFF" />
+              <Text
+                style={{ marginLeft: 10, fontSize: 13, fontWeight: "500", letterSpacing: 2, color: "#FFFFFF", textTransform: "uppercase" }}
+              >
+                {inStock ? "Add To Bag" : "Out of Stock"}
+              </Text>
+            </>
+          )}
+        </TouchableOpacity>
       </View>
+
+      <ImageViewing
+        images={product.images.map((img: string) => ({ uri: img }))}
+        imageIndex={selectedImageIndex}
+        visible={isImageViewVisible}
+        onRequestClose={() => setIsImageViewVisible(false)}
+      />
     </SafeScreen>
   );
 };
 
 export default ProductDetailScreen;
 
-function ErrorUI() {
+function LoadingUI() {
   return (
     <SafeScreen>
       <View className="flex-1 items-center justify-center px-6">
-        <Ionicons name="alert-circle-outline" size={64} color="#FF6B6B" />
-        <Text className="text-text-primary font-semibold text-xl mt-4">Product not found</Text>
-        <Text className="text-text-secondary text-center mt-2">
-          This product may have been removed or doesn&apos;t exist
-        </Text>
-        <TouchableOpacity
-          className="bg-primary rounded-2xl px-6 py-3 mt-6"
-          onPress={() => router.back()}
-        >
-          <Text className="text-background font-bold">Go Back</Text>
-        </TouchableOpacity>
+        <ActivityIndicator size="large" color="#000000" />
+        <Text className="mt-4 text-sm text-text-secondary">Loading product...</Text>
       </View>
     </SafeScreen>
   );
 }
 
-function LoadingUI() {
+function ErrorUI() {
   return (
     <SafeScreen>
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#1DB954" />
-        <Text className="text-text-secondary mt-4">Loading product...</Text>
+      <View className="flex-1 items-center justify-center px-6">
+        <Ionicons name="alert-circle-outline" size={48} color="#CC0000" />
+        <Text className="mt-4 text-lg font-medium text-black">Product not found</Text>
+        <Text className="mt-2 text-center text-sm text-text-secondary">
+          This product may have been removed or does not exist
+        </Text>
+        <TouchableOpacity
+          className="mt-6 bg-black px-8 py-3"
+          onPress={() => router.back()}
+        >
+          <Text style={{ fontSize: 12, fontWeight: "500", letterSpacing: 2, color: "#FFFFFF", textTransform: "uppercase" }}>
+            Go Back
+          </Text>
+        </TouchableOpacity>
       </View>
     </SafeScreen>
   );

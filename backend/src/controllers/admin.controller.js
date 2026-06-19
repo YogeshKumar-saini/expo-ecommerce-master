@@ -11,6 +11,7 @@ export async function createProduct(req, res) {
       price, 
       stock, 
       category,
+      subcategory,
       brandName,
       details,
       sizes,
@@ -21,7 +22,7 @@ export async function createProduct(req, res) {
       isFeatured
     } = req.body;
 
-    if (!name || !description || !price || !stock || !category) {
+    if (!name || !description || !price || !stock || !category || !subcategory) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -49,6 +50,7 @@ export async function createProduct(req, res) {
       price: parseFloat(price),
       stock: parseInt(stock),
       category,
+      subcategory,
       images: imageUrls,
       brandName: brandName || "",
       details: details || "",
@@ -100,6 +102,7 @@ export async function updateProduct(req, res) {
       price, 
       stock, 
       category,
+      subcategory,
       brandName,
       details,
       sizes,
@@ -120,6 +123,7 @@ export async function updateProduct(req, res) {
     if (price !== undefined) product.price = parseFloat(price);
     if (stock !== undefined) product.stock = parseInt(stock);
     if (category) product.category = category;
+    if (subcategory) product.subcategory = subcategory;
     
     if (brandName !== undefined) product.brandName = brandName;
     if (details !== undefined) product.details = details;

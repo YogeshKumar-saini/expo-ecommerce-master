@@ -9,6 +9,10 @@ const stripe = ENV.STRIPE_SECRET_KEY && ENV.STRIPE_SECRET_KEY !== "your_stripe_s
 
 export async function createPaymentIntent(req, res) {
   try {
+    if (!stripe) {
+      return res.status(503).json({ error: "Stripe is not configured on the server" });
+    }
+
     const { cartItems, shippingAddress } = req.body;
     const user = req.user;
 
@@ -41,7 +45,7 @@ export async function createPaymentIntent(req, res) {
       });
     }
 
-    const shipping = 10.0; // $10
+    const shipping = 10.0;
     const tax = subtotal * 0.08; // 8%
     const total = subtotal + shipping + tax;
 
@@ -72,7 +76,7 @@ export async function createPaymentIntent(req, res) {
     // create payment intent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(total * 100), // convert to cents
-      currency: "usd",
+      currency: "inr",
       customer: customer.id,
       automatic_payment_methods: {
         enabled: true,
@@ -95,6 +99,10 @@ export async function createPaymentIntent(req, res) {
 }
 
 export async function handleWebhook(req, res) {
+  if (!stripe) {
+    return res.status(503).send("Stripe is not configured on the server");
+  }
+
   const sig = req.headers["stripe-signature"];
   let event;
 

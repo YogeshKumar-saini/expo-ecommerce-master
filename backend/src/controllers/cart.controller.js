@@ -51,8 +51,7 @@ export async function addToCart(req, res) {
     // check if item already in the cart
     const existingItem = cart.items.find((item) => item.product.toString() === productId);
     if (existingItem) {
-      // increment quantity by 1
-      const newQuantity = existingItem.quantity + 1;
+      const newQuantity = existingItem.quantity + quantity;
       if (product.stock < newQuantity) {
         return res.status(400).json({ error: "Insufficient stock" });
       }

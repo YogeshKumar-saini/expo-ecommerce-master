@@ -1,6 +1,7 @@
 import SafeScreen from "@/components/SafeScreen";
 import useCart from "@/hooks/useCart";
 import useWishlist from "@/hooks/useWishlist";
+import { formatPrice } from "@/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -95,7 +96,7 @@ function WishlistScreen() {
                       {item.name}
                     </Text>
                     <Text className="text-primary font-bold text-xl mb-2">
-                      ${item.price.toFixed(2)}
+                      {formatPrice(item.price)}
                     </Text>
 
                     {item.stock > 0 ? (

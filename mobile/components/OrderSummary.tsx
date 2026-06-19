@@ -1,4 +1,5 @@
 import { View, Text } from "react-native";
+import { formatPrice } from "@/lib/utils";
 
 interface OrderSummaryProps {
   subtotal: number;
@@ -9,37 +10,41 @@ interface OrderSummaryProps {
 
 export default function OrderSummary({ subtotal, shipping, tax, total }: OrderSummaryProps) {
   return (
-    <View className="px-6 mt-6">
-      <View className="bg-surface rounded-3xl p-5">
-        <Text className="text-text-primary text-xl font-bold mb-4">Summary</Text>
+    <View className="mt-6 px-5">
+      <View className="rounded-xl border border-[#E5E5E5] bg-white p-5">
+        <Text
+          style={{ fontSize: 13, fontWeight: "500", letterSpacing: 2, color: "#000000", textTransform: "uppercase", marginBottom: 20 }}
+        >
+          Summary
+        </Text>
 
-        <View className="space-y-3">
-          <View className="flex-row justify-between items-center">
-            <Text className="text-text-secondary text-base">Subtotal</Text>
-            <Text className="text-text-primary font-semibold text-base">
-              ${subtotal.toFixed(2)}
+        <View>
+          <View className="flex-row items-center justify-between">
+            <Text className="text-sm text-text-secondary">Product price</Text>
+            <Text className="text-sm text-black">{formatPrice(subtotal)}</Text>
+          </View>
+
+          <View className="my-4 h-px bg-[#F0F0F0]" />
+
+          <View className="flex-row items-center justify-between">
+            <Text className="text-sm text-text-secondary">Shipping</Text>
+            <Text className="text-sm text-black">
+              {shipping === 0 ? "Freeship" : formatPrice(shipping)}
             </Text>
           </View>
 
-          <View className="flex-row justify-between items-center">
-            <Text className="text-text-secondary text-base">Shipping</Text>
-            <Text className="text-text-primary font-semibold text-base">
-              ${shipping.toFixed(2)}
-            </Text>
+          <View className="my-4 h-px bg-[#F0F0F0]" />
+
+          <View className="flex-row items-center justify-between">
+            <Text className="text-sm text-text-secondary">Tax</Text>
+            <Text className="text-sm text-black">{formatPrice(tax)}</Text>
           </View>
 
-          <View className="flex-row justify-between items-center">
-            <Text className="text-text-secondary text-base">Tax</Text>
-            <Text className="text-text-primary font-semibold text-base">${tax.toFixed(2)}</Text>
-          </View>
+          <View className="my-4 h-px bg-[#F0F0F0]" />
 
-          {/* Divider */}
-          <View className="border-t border-background-lighter pt-3 mt-1" />
-
-          {/* Total */}
-          <View className="flex-row justify-between items-center">
-            <Text className="text-text-primary font-bold text-lg">Total</Text>
-            <Text className="text-primary font-bold text-2xl">${total.toFixed(2)}</Text>
+          <View className="flex-row items-center justify-between">
+            <Text className="text-base font-medium text-black">Subtotal</Text>
+            <Text className="text-xl font-semibold text-black">{formatPrice(total)}</Text>
           </View>
         </View>
       </View>
